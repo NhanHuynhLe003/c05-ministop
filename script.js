@@ -90,6 +90,8 @@ function searchBtn(books) {
   let btn = document.getElementById("apply-price-filter");
   btn.onclick = function () {
     searchBar(books);
+    console.log(listProvider(books));
+    
   };
 }
 
@@ -99,7 +101,7 @@ function searchEnter() {
     if (e.key == "Enter") searchBar(books);
   };
 }
-searchEnter();
+
 function renderPriceAndName(books) {
   let list = document.getElementById("list");
   let item = list.getElementsByClassName("item");
@@ -130,18 +132,97 @@ function searchBar(books) {
   let value = document.getElementById("search").value;
   let list = document.getElementById("list");
   let item = list.getElementsByClassName("item");
-
+  let providerList = listProvider(books);
   /**hien thi sach bang ten */
   for (let k = 0; k < bookItem.length; k++) {
     let price = Number(item[k].children[2].innerText);
 
-    if (kiemTraSach(value, books, k) && rangePrice(price)) {
+    if (kiemTraSach(value, books, k) && rangePrice(price) && checkProvider(value, providerList)) {
       bookItem[k].style.display = "block";
-    } else if (value == "" && rangePrice(price))
-      bookItem[k].style.display = "block";
+    } else if (value == "" && rangePrice(price)){
+      handleCheckBox(books);
+    }
     else bookItem[k].style.display = "none";
   }
 }
+/**kiem tra sach nha cung cap */
 
+function listProvider(books){
+  let result = [];
+  let provider = document.querySelectorAll('input[type=checkbox]');
+  if(provider[0].checked == true) {
+      books.filter(function(book){
+      if(book.provider == 'Fahasha') result.push(book);
+    });
+  } 
+  if(provider[1].checked == true) {
+    books.filter(function(book){
+    if(book.provider == 'Tuổi trẻ') result.push(book);
+  })
+  } 
+  if(provider[2].checked == true){
+    books.filter(function(book){
+      if(book.provider == 'Kmin Books') result.push(book);
+    })
+  }
+
+  if(result.length == 0) {
+    for(let i = 0; i<books.length ;i++){
+      result.push(books[i])
+    }
+  }
+return result;
+}
+
+
+function checkProvider(val, listProvider){
+  for(let k=0; k<listProvider.length ;k++){
+    if(val === listProvider[k].name) return true;
+  }
+  return false
+}
+
+function handleCheckBox(books){
+  let bookList = document.getElementById("list");
+  let bookItem = bookList.children;
+  let checkBox = document.querySelectorAll('input[type=checkbox]');
+  let selectedBook = listProvider(books);
+  for(let j =0;j<books.length; j++){
+    for(let i=0; i<selectedBook.length ; i++){
+      let id = selectedBook[i].id - 1;
+      if(checkBox[0].checked && checkBox[1].checked == false && checkBox[2].checked == false) { 
+        bookItem[id].style.display = "block";
+        if(j != (id)) bookItem[j].style.display = "none";
+      }
+      else if(checkBox[0].checked ==false && checkBox[1].checked && checkBox[2].checked == false) { 
+        bookItem[id].style.display = "block";
+        if(j != (id)) bookItem[j].style.display = "none";
+      }
+      else if(checkBox[0].checked ==false && checkBox[1].checked == false && checkBox[2].checked) { 
+        bookItem[id].style.display = "block";
+        if(j != (id)) bookItem[j].style.display = "none";
+      }
+      else if(checkBox[0].checked && checkBox[1].checked && checkBox[2].checked == false) { 
+        bookItem[id].style.display = "block";
+        if(j != (id)) bookItem[j].style.display = "none";
+      }
+      else if(checkBox[0].checked ==false && checkBox[1].checked && checkBox[2].checked) { 
+        bookItem[j].style.display = "none";
+        bookItem[id].style.display = "block";
+        bookItem[books.length-1].style.display = "block";
+      }
+      else if(checkBox[0].checked && checkBox[1].checked == false && checkBox[2].checked) { 
+        bookItem[id].style.display = "block";
+        if(j != (id)) bookItem[j].style.display = "none";
+      }
+      else {
+        bookItem[id].style.display = "block";
+      }
+    }
+}
+
+}
+
+searchEnter();
 searchBtn(books);
 renderPriceAndName(books);
