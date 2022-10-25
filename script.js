@@ -90,8 +90,6 @@ function searchBtn(books) {
   let btn = document.getElementById("apply-price-filter");
   btn.onclick = function () {
     searchBar(books);
-    console.log(listProvider(books));
-    
   };
 }
 
@@ -113,18 +111,35 @@ function renderPriceAndName(books) {
   }
 }
 
-function rangePrice(price) {
-  let minPrice = document.getElementById("min-price");
-  let maxPrice = document.getElementById("max-price");
-
-  if (Number(maxPrice.value) > Number(minPrice.value)) {
-    if (price >= Number(minPrice.value) && price <= Number(maxPrice.value))
-      return true;
-    else return false;
-  } else if (Number(maxPrice.value) == 0 && Number(minPrice.value) == 0)
-    return true;
-  else return false;
+function checkProvider(val, listProvider) {
+  for (let k = 0; k < listProvider.length; k++) {
+    if (val === listProvider[k].name) return true;
+  }
+  return false;
 }
+
+
+function minPrice() {
+  document.getElementById("min-price");
+  return Number(document.getElementById("min-price").value);
+}
+function maxPrice() {
+  let maxPrice = document.getElementById("max-price");
+  return Number(maxPrice.value);
+}
+// sua lai neu menh gia nam tu min -> max thì lấy các element thỏa đkien là xong
+function rangePrice(price) {
+  let min = minPrice();
+  let max = maxPrice();
+
+  if (max > min) {
+    if (price >= min && price <= max) return true;
+    else return false;
+  } else if (max == 0 && min == 0) {
+    return true;
+  } else return false;
+}
+
 
 function searchBar(books) {
   let bookList = document.getElementById("list");
@@ -134,93 +149,101 @@ function searchBar(books) {
   let item = list.getElementsByClassName("item");
   let providerList = listProvider(books);
   /**hien thi sach bang ten */
-  for (let k = 0; k < bookItem.length; k++) {
-    let price = Number(item[k].children[2].innerText);
+  let myId = [];
 
-    if (kiemTraSach(value, books, k) && rangePrice(price) && checkProvider(value, providerList)) {
-      bookItem[k].style.display = "block";
-    } else if (value == "" && rangePrice(price)){
-      handleCheckBox(books);
+  for (let k = 0; k < books.length; k++) {
+    let price = Number(item[k].children[2].innerText);
+    if(providerList[k] != undefined){
+      myId.push(providerList[k].id);
     }
-    else bookItem[k].style.display = "none";
+    if (
+      kiemTraSach(value, books, k) &&
+      rangePrice(price) &&
+      checkProvider(value, providerList)
+    ) {
+      bookItem[k].style.display = "block";
+    } else bookItem[k].style.display = "none";
+    if (value == '') {
+      bookItem[k].style.display = "none";
+      for(let m=0;m<providerList.length; m++){
+        let id = myId[m];
+        if(books[id-1] == books[k]){
+          bookItem[k].style.display = "block";
+        }
+      }
+      
+    } 
   }
 }
+
+
+function handlePriceOfCheckBox(listProvider, min, max) {
+  let result = listProvider.filter(function (priceBook) {
+    if (max > 0 && min < max) {
+      return priceBook.price >= min && priceBook.price <= max;
+    } else {
+      return priceBook;
+    }
+  });
+  return result;
+}
+
 /**kiem tra sach nha cung cap */
 
-function listProvider(books){
+function listProvider(books) {
   let result = [];
-  let provider = document.querySelectorAll('input[type=checkbox]');
-  if(provider[0].checked == true) {
-      books.filter(function(book){
-      if(book.provider == 'Fahasha') result.push(book);
-    });
-  } 
-  if(provider[1].checked == true) {
-    books.filter(function(book){
-    if(book.provider == 'Tuổi trẻ') result.push(book);
-  })
-  } 
-  if(provider[2].checked == true){
-    books.filter(function(book){
-      if(book.provider == 'Kmin Books') result.push(book);
-    })
-  }
+  let provider = document.querySelectorAll("input[type=checkbox]");
 
-  if(result.length == 0) {
-    for(let i = 0; i<books.length ;i++){
-      result.push(books[i])
+  books.forEach(function (book) {
+    if (
+      provider[0].checked == true &&
+      provider[1].checked == false &&
+      provider[2].checked == false
+    ) {
+      if (book.provider == "Fahasha") result.push(book);
+    } else if (
+      provider[1].checked == true &&
+      provider[2].checked == false &&
+      provider[0].checked == false
+    ) {
+      if (book.provider == "Tuổi trẻ") result.push(book);
+    } else if (
+      provider[2].checked == true &&
+      provider[0].checked == false &&
+      provider[1].checked == false
+    ) {
+      if (book.provider == "Kmin Books") result.push(book);
+    } else if (
+      provider[0].checked == true &&
+      provider[1].checked == true &&
+      provider[2].checked == false
+    ) {
+      if (book.provider == "Fahasha") result.push(book);
+      if (book.provider == "Tuổi trẻ") result.push(book);
+    } else if (
+      provider[0].checked == false &&
+      provider[1].checked == true &&
+      provider[2].checked == true
+    ) {
+      if (book.provider == "Tuổi trẻ") result.push(book);
+      if (book.provider == "Kmin Books") result.push(book);
+    } else if (
+      provider[0].checked == true &&
+      provider[1].checked == false &&
+      provider[2].checked == true
+    ) {
+      if (book.provider == "Fahasha") result.push(book);
+      if (book.provider == "Kmin Books") result.push(book);
+    } else {
+      if (book.provider == "Fahasha") result.push(book);
+      if (book.provider == "Tuổi trẻ") result.push(book);
+      if (book.provider == "Kmin Books") result.push(book);
     }
-  }
-return result;
-}
+  });
 
+  result = handlePriceOfCheckBox(result, minPrice(), maxPrice());
 
-function checkProvider(val, listProvider){
-  for(let k=0; k<listProvider.length ;k++){
-    if(val === listProvider[k].name) return true;
-  }
-  return false
-}
-
-function handleCheckBox(books){
-  let bookList = document.getElementById("list");
-  let bookItem = bookList.children;
-  let checkBox = document.querySelectorAll('input[type=checkbox]');
-  let selectedBook = listProvider(books);
-  for(let j =0;j<books.length; j++){
-    for(let i=0; i<selectedBook.length ; i++){
-      let id = selectedBook[i].id - 1;
-      if(checkBox[0].checked && checkBox[1].checked == false && checkBox[2].checked == false) { 
-        bookItem[id].style.display = "block";
-        if(j != (id)) bookItem[j].style.display = "none";
-      }
-      else if(checkBox[0].checked ==false && checkBox[1].checked && checkBox[2].checked == false) { 
-        bookItem[id].style.display = "block";
-        if(j != (id)) bookItem[j].style.display = "none";
-      }
-      else if(checkBox[0].checked ==false && checkBox[1].checked == false && checkBox[2].checked) { 
-        bookItem[id].style.display = "block";
-        if(j != (id)) bookItem[j].style.display = "none";
-      }
-      else if(checkBox[0].checked && checkBox[1].checked && checkBox[2].checked == false) { 
-        bookItem[id].style.display = "block";
-        if(j != (id)) bookItem[j].style.display = "none";
-      }
-      else if(checkBox[0].checked ==false && checkBox[1].checked && checkBox[2].checked) { 
-        bookItem[j].style.display = "none";
-        bookItem[id].style.display = "block";
-        bookItem[books.length-1].style.display = "block";
-      }
-      else if(checkBox[0].checked && checkBox[1].checked == false && checkBox[2].checked) { 
-        bookItem[id].style.display = "block";
-        if(j != (id)) bookItem[j].style.display = "none";
-      }
-      else {
-        bookItem[id].style.display = "block";
-      }
-    }
-}
-
+  return result;
 }
 
 searchEnter();
