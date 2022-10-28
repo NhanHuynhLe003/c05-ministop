@@ -86,16 +86,17 @@ function kiemTraSach(val, books, i) {
   return false;
 }
 
-function searchBtn(books) {
+function searchBtn(newList) {
   let btn = document.getElementById("apply-price-filter");
   btn.onclick = function () {
-    searchBar(books);
+    searchBar(newList);
+    console.log(listProvider(books));
   };
 }
 
-function searchEnter() {
+function searchEnter(books) {
   let enter = document.getElementById("search");
-  enter.onkeydown = function (e) {
+  enter.onkeyup = function (e) {
     if (e.key == "Enter") searchBar(books);
   };
 }
@@ -106,8 +107,11 @@ function renderPriceAndName(books) {
   for (let i = 0; i < item.length; i++) {
     let price = item[i].children[2];
     let name = item[i].children[1];
+    let image = item[i].children[0];
+    let id = books[i].id;
     name.innerText = books[i].name;
     price.innerText = books[i].price;
+    image.src = `./images/0${id}.jpg`;
   }
 }
 
@@ -118,7 +122,6 @@ function checkProvider(val, listProvider) {
   return false;
 }
 
-
 function minPrice() {
   document.getElementById("min-price");
   return Number(document.getElementById("min-price").value);
@@ -127,7 +130,7 @@ function maxPrice() {
   let maxPrice = document.getElementById("max-price");
   return Number(maxPrice.value);
 }
-// sua lai neu menh gia nam tu min -> max thì lấy các element thỏa đkien là xong
+
 function rangePrice(price) {
   let min = minPrice();
   let max = maxPrice();
@@ -140,42 +143,40 @@ function rangePrice(price) {
   } else return false;
 }
 
-
 function searchBar(books) {
   let bookList = document.getElementById("list");
   let bookItem = bookList.children;
+
   let value = document.getElementById("search").value;
   let list = document.getElementById("list");
   let item = list.getElementsByClassName("item");
   let providerList = listProvider(books);
+
   /**hien thi sach bang ten */
-  let myId = [];
 
   for (let k = 0; k < books.length; k++) {
+    let nameOfBookInList = bookItem[k].children[1].innerText;
     let price = Number(item[k].children[2].innerText);
-    if(providerList[k] != undefined){
-      myId.push(providerList[k].id);
-    }
     if (
       kiemTraSach(value, books, k) &&
       rangePrice(price) &&
       checkProvider(value, providerList)
     ) {
       bookItem[k].style.display = "block";
-    } else bookItem[k].style.display = "none";
-    if (value == '') {
+    } else {
       bookItem[k].style.display = "none";
-      for(let m=0;m<providerList.length; m++){
-        let id = myId[m];
-        if(books[id-1] == books[k]){
+    }
+
+    if (value == "") {
+      bookItem[k].style.display = "none";
+      for (let m = 0; m < providerList.length; m++) {
+        if (nameOfBookInList == providerList[m].name) {
           bookItem[k].style.display = "block";
         }
       }
-      
-    } 
+    }
   }
 }
-
 
 function handlePriceOfCheckBox(listProvider, min, max) {
   let result = listProvider.filter(function (priceBook) {
@@ -246,6 +247,57 @@ function listProvider(books) {
   return result;
 }
 
-searchEnter();
-searchBtn(books);
-renderPriceAndName(books);
+function sortBook(books) {
+  let selectElement = document.getElementById("sort-by");
+  selectElement.addEventListener("change", function () {
+    let output = [];
+    let name = [];
+    books.forEach((book) => {
+      name.push(book.name);
+      return name;
+    });
+
+    let result;
+    if (selectElement.value == "sort by price") {
+      result = books.sort((a, b) => a.price - b.price);
+    }
+    if (selectElement.value == "sort by name") {
+      name = name.sort();
+      for (let i = 0; i < name.length; i++) {
+        for (let j = 0; j < books.length; j++) {
+          if (name[i] != books[j].name) continue;
+          else result = output.push(books[j]);
+        }
+      }
+      result = output;
+    }
+
+    searchEnter(result);
+    searchBtn(result);
+    renderPriceAndName(result);
+  });
+}
+
+function runInit() {
+  let output = [];
+  let result;
+  let nameBook = [];
+  books.forEach((book) => {
+    nameBook.push(book.name);
+    return nameBook;
+  });
+  nameBook = nameBook.sort();
+  for (let i = 0; i < nameBook.length; i++) {
+    for (let j = 0; j < books.length; j++) {
+      if (nameBook[i] != books[j].name) continue;
+      else result = output.push(books[j]);
+    }
+  }
+  result = output;
+
+  searchEnter(result);
+  searchBtn(result);
+  renderPriceAndName(result);
+}
+runInit();
+sortBook(books);
