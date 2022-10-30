@@ -50,6 +50,24 @@ let books = [
     price: 130000,
     provider: "Tuổi trẻ",
   },
+  {
+    id: 9,
+    name: "Đắc nhân tâm",
+    price: 140000,
+    provider: "Fahasha",
+  },
+  {
+    id: 10,
+    name: "Tư duy nhanh và chậm",
+    price: 180000,
+    provider: "Tuổi trẻ",
+  },
+  {
+    id: 11,
+    name: "Sức mạnh của thói quen",
+    price: 250000,
+    provider: "Tuổi trẻ",
+  },
 ];
 
 /**tao mau */
@@ -109,9 +127,11 @@ function renderPriceAndName(books) {
     let name = item[i].children[1];
     let image = item[i].children[0];
     let id = books[i].id;
+    
     name.innerText = books[i].name;
     price.innerText = books[i].price;
     image.src = `./images/0${id}.jpg`;
+    if(id>9) image.src = `./images/${id}.jpg`;
   }
 }
 
